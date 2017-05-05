@@ -1,4 +1,4 @@
-
+import time as tsys
 import argparse
 
 import numpy as np
@@ -121,7 +121,7 @@ def make_data():
         if len(e) > 1:
             counter += 1
 
-    print("The pile-up fraction is %.4f"(counter/float(len(evts))))
+    print("The pile-up fraction is %.4f"%(counter/float(len(evts))))
 
     return time, a_real, cr_real, pu_energies
 
@@ -365,6 +365,8 @@ def sample(time, a_real, cr_real, pu_energies, nsim=1000,
     return new_pars, d_all, p_all, m2_all
 
 def main():
+
+    tstart = tsys.clock()
  
     # make a data set
     time, a_real, cr_real, pu_energies = make_data()
@@ -374,14 +376,17 @@ def main():
                                                               nsim=clargs.nsim)
 
         df = np.vstack([d_all_r, p_all_r, m2_all_r]).T
-        np.savetxt(outroot + "_real.txt", df)
+        np.savetxt(clargs.outroot + "_real.txt", df)
     else:
         new_pars, d_all, p_all, m2_all = sample(time, a_real, cr_real, pu_energies,
                                                 nsim = clargs.nsim)
 
         df = np.vstack([new_pars.T, d_all, p_all, m2_all]).T
-        np.savetxt(outroot + "_sim.txt", df)
+        np.savetxt(clargs.outroot + "_sim.txt", df)
 
+    tend = tsys.clock()
+
+    print("total runtime: " + str(tend - tstart))
 
     return
 
@@ -395,6 +400,10 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--nsim", action="store", required=False, 
                         dest="nsim", default=1000, type=int, 
                         help = "number of simulations to run.")
+
+    parser.add_argument("-r", "--real", action="store", required=False,
+                        dest="real", default=False, type=bool,
+                        help = "Run on the ground truth parameters or sample from prior?")
 
     clargs = parser.parse_args()
 
